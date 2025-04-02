@@ -1,5 +1,10 @@
 # Grafana Faro POC
 
+## Diagram
+
+![image](https://github.com/user-attachments/assets/305dcfb6-c55d-439d-8f0b-605bfb365cf6)
+
+
 ## Overview
 This Proof of Concept (POC) demonstrates the integration of **Grafana Faro** for frontend observability. Grafana Faro enables logging, tracing, and metrics collection from frontend applications, helping in performance monitoring and debugging.
 
