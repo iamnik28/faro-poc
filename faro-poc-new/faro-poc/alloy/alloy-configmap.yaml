@@ -1,0 +1,102 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-alloy-config
+  namespace: observability
+data:
+  config.alloy: |-
+    logging {
+      level  = "debug"
+      format = "logfmt"
+    }
+
+    loki.process "logs_process_client" {
+      forward_to = [loki.write.logs_write_client.receiver]
+
+      stage.logfmt {
+        mapping = { "kind" = "", "service_name" = "", "app" = "" }
+      }
+
+      stage.labels {
+        values = { "kind" = "kind", "service_name" = "service_name", "app" = "app" }
+      }
+    }
+
+    loki.write "logs_write_client" {
+      endpoint {
+        url = format("http://%s:%s/loki/api/v1/push", "logging-standalone.logging.svc.cluster.local", "3100")
+      }
+      external_labels = {}
+    }
+
+    local.file_match "logs_file_server" {
+      path_targets = [{
+        __address__ = "localhost",
+        __path__    = "/var/log/server.log",
+        app         = "ecommerce-app",
+      }]
+    }
+
+    loki.source.file "logs_source_server" {
+      targets               = local.file_match.logs_file_server.targets
+      forward_to            = [loki.write.logs_write_server.receiver]
+      legacy_positions_file = "/tmp/positions-server.yaml"
+    }
+
+    loki.write "logs_write_server" {
+      endpoint {
+        url = format("http://%s:%s/loki/api/v1/push", "logging-standalone.logging.svc.cluster.local", "3100")
+      }
+      external_labels = {}
+    }
+
+    faro.receiver "integrations_app_agent_receiver" {
+      extra_log_labels = {
+        app  = "ecommerce-app",
+        kind = "",
+      }
+
+      server {
+        listen_address           = "0.0.0.0"
+        listen_port              = 8027
+        cors_allowed_origins     = ["*"]
+        max_allowed_payload_size = "10MiB"
+
+        rate_limiting {
+          rate = 50
+        }
+      }
+
+      sourcemaps {}
+
+      output {
+        logs   = [loki.process.logs_process_client.receiver]
+        traces = [otelcol.exporter.otlp.trace_write.input]
+      }
+    }
+
+    otelcol.receiver.otlp "default" {
+      grpc {
+        endpoint        = "0.0.0.0:14317"
+        include_metadata = true
+      }
+      http {
+        endpoint = "0.0.0.0:14318"
+      }
+      output {
+        metrics = []
+        logs    = []
+        traces  = [otelcol.exporter.otlp.trace_write.input]
+      }
+    }
+
+    otelcol.exporter.otlp "trace_write" {
+      retry_on_failure {
+        max_elapsed_time = "1m0s"
+      }
+      client {
+        endpoint = "tempo:4317"
+        tls { insecure = true }
+      }
+    }
+

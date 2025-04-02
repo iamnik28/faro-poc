@@ -1,0 +1,35 @@
+controller:
+  type: deployment
+  replicaCount: 1
+
+alloy:
+  configMap:
+    create: false
+    name: grafana-alloy-config
+    key: config.alloy
+
+  stabilityLevel: "generally-available"
+  storagePath: /var/lib/alloy
+  listenAddr: 0.0.0.0
+  listenPort: 12345
+  listenScheme: HTTP
+  uiPathPrefix: /
+  enableReporting: true
+
+  extraPorts:
+    - name: otlp-grpc
+      port: 14317
+      targetPort: 14317
+      protocol: TCP
+    - name: otlp-http
+      port: 14318
+      targetPort: 14318
+      protocol: TCP
+    - name: otlp-faro  # Added the otlp-faro port
+      port: 8027
+      targetPort: 8027
+      protocol: TCP
+
+service:
+  enabled: true
+  type: ClusterIP

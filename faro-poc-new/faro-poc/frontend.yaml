@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ecommerce-app
+  namespace: observability
+  labels:
+    app: ecommerce-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ecommerce-app
+  template:
+    metadata:
+      labels:
+        app: ecommerce-app
+      annotations:
+        instrumentation.opentelemetry.io/inject-nodejs: "observability/otel-instrumentation"
+    spec:
+      containers:
+      - name: ecommerce-app
+        image: faro-poc:v253
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: ecommerce-service
+  namespace: observability
+  labels:
+    app: ecommerce-app
+spec:
+  selector:
+    app: ecommerce-app
+  ports:
+  - port: 80
+    targetPort: 80
+  type: ClusterIP

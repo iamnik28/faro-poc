@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana-alloy
+  namespace: observability
+  labels:
+    app: grafana-alloy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana-alloy
+  template:
+    metadata:
+      labels:
+        app: grafana-alloy
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "12345"
+    spec:
+      containers:
+      - name: alloy
+        image: grafana/alloy:v1.0.0
+        args:
+        - "run"
+        - "--storage.path=/var/lib/alloy"
+        - "--server.http.listen-addr=0.0.0.0:12345"
+        - "/etc/alloy/config.alloy"
+        ports:
+        - name: http-metrics
+          containerPort: 12345
+          protocol: TCP
+        - name: otlp-grpc
+          containerPort: 14317
+          protocol: TCP
+        - name: otlp-http
+          containerPort: 14318
+          protocol: TCP
+        volumeMounts:
+        - name: config
+          mountPath: /etc/alloy
+          readOnly: true
+        - name: storage
+          mountPath: /var/lib/alloy
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumes:
+      - name: config
+        configMap:
+          name: grafana-alloy-config
+      - name: storage
+        emptyDir: {}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana-alloy
+  namespace: observability
+  labels:
+    app: grafana-alloy
+spec:
+  selector:
+    app: grafana-alloy
+  ports:
+  - name: http-metrics
+    port: 12345
+    targetPort: 12345
+    protocol: TCP
+  - name: otlp-grpc
+    port: 14317
+    targetPort: 14317
+    protocol: TCP
+  - name: otlp-http
+    port: 14318
+    targetPort: 14318
+    protocol: TCP
+  - name: otlp-faro
+    port: 8027
+    targetPort: 8027
+  type: ClusterIP
+
