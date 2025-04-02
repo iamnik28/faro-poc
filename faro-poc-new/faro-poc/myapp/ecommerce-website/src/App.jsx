@@ -6,7 +6,7 @@ import Home from "./pages/Home";
 import Product from "./pages/Product";
 import Cart from "./pages/Cart";
 import Footer from "./components/Footer";
-import { faro, logEvent } from "./faroConfig";  // ✅ Faro logging functions import karo
+import { faro, logEvent } from "./faroConfig";  // ✅ Import your Faro logging functions 
 
 // 🔹 Page Navigation Tracking Component
 const PageTracker = () => {
@@ -23,7 +23,7 @@ function App() {
   return (
     <CartProvider>
       <Router>
-        <PageTracker />  {/* ✅ Page Views Track Karega */}
+        <PageTracker />  {/* ✅ Page Views Track */}
         <div className="flex flex-col min-h-screen">
           <Navbar />
           <main className="flex-grow container mx-auto p-4">
