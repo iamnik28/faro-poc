@@ -3,11 +3,11 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# Package files copy karo
+# Copy Package files 
 COPY package.json package-lock.json ./
 RUN npm ci --silent
 
-# Baaki code copy karo
+# Copy your code
 COPY . .
 
 # Build React App
@@ -19,7 +19,7 @@ FROM nginx:alpine
 LABEL maintainer="Nikhil <nikhil.kumbhare@opstree.com>"
 LABEL version="1.0"
 
-# Build output copy karo
+# Copy your build output
 COPY --from=builder /app/dist /usr/share/nginx/html
 
 # ✅ Correct location for nginx.conf
