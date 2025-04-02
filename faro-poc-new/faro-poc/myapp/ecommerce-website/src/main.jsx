@@ -1,4 +1,4 @@
-import "./faroConfig"; // ✅ Faro ko pehle initialize karna zaroori hai
+import "./faroConfig"; // ✅ Faro initialize 
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
