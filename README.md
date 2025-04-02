@@ -110,14 +110,42 @@ helm install grafana-alloy grafana/alloy -n observability -f values.yaml
 
 Grafana Alloy is used as an agent to collect and forward telemetry data from **Grafana Faro** to backend observability systems. It acts as an intermediary, handling logs, traces, and metrics before sending them to **Loki, Tempo, and VictoriaMetrics**.
 ## Usage
-1. **Initialize Faro**: Create a separate file (e.g., `faro.js`) to initialize Faro with logging, tracing, and metrics.
+1. **Initialize Faro**: Create a separate file (e.g., `faro.js`) under **src** folder to initialize Faro with logging, tracing, and metrics.
 2. **Import and use in your application**: Ensure that Faro is initialized at the application's entry point.
 3. **Send telemetry data**: Log messages, capture errors, and send traces to your backend observability stack (Grafana Tempo, Loki, and VictoriaMetrics) via Grafana Alloy.
 
+#### Example `faro.js` file
+```javascript
+import { getWebInstrumentations, initializeFaro } from "@grafana/faro-web-sdk";
+import { TracingInstrumentation } from "@grafana/faro-web-tracing";
+
+// Initialize Grafana Faro
+export const faro = initializeFaro({
+   url: `${window.location.origin}/collect`, // your collector endpoint
+  app: {
+    name: "ecommerce-app",
+    version: "1.0.0",
+    environment: "non-prod",
+  },
+  instrumentations: [
+    ...getWebInstrumentations({
+      captureConsole: true, // Capture console logs
+    }),
+    new TracingInstrumentation(), // Enable tracing
+  ],
+});
+```
 ## Next Steps
 - Configure Faro to send data to your observability stack.
 - Visualize logs, metrics, and traces in **Grafana**.
 - Monitor Web Vitals and user interactions to optimize performance.
+  
+## Output
+
+![image](https://github.com/user-attachments/assets/c396bd13-f64f-4044-97c3-44e7c7c4ff1c)
+![image](https://github.com/user-attachments/assets/dc4f4413-2f6f-47b3-bca5-bc012eccf659)
+
+
 
 ## References
 - [Grafana Faro Documentation](https://grafana.com/docs/grafana-cloud/monitor-applications/frontend-observability/architecture/)
