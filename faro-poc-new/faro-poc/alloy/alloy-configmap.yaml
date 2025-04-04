@@ -14,11 +14,21 @@ data:
       forward_to = [loki.write.logs_write_client.receiver]
 
       stage.logfmt {
-        mapping = { "kind" = "", "service_name" = "", "app" = "" }
+        mapping = {
+          "kind"         = "",
+          "service_name" = "",
+          "app"          = "",
+          "page_url"     = "",
+        }
       }
 
       stage.labels {
-        values = { "kind" = "kind", "service_name" = "service_name", "app" = "app" }
+        values = {
+          "kind"         = "kind",
+          "service_name" = "service_name",
+          "app"          = "app",
+          "page_url"     = "page_url",
+        }
       }
     }
 
@@ -67,7 +77,7 @@ data:
         }
       }
 
-      sourcemaps {}
+      sourcemaps { }
 
       output {
         logs   = [loki.process.logs_process_client.receiver]
@@ -77,7 +87,7 @@ data:
 
     otelcol.receiver.otlp "default" {
       grpc {
-        endpoint        = "0.0.0.0:14317"
+        endpoint         = "0.0.0.0:14317"
         include_metadata = true
       }
       http {
@@ -99,4 +109,3 @@ data:
         tls { insecure = true }
       }
     }
-
